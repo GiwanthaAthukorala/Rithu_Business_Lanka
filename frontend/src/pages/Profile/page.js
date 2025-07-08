@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User, DollarSign } from "lucide-react";
 import Header from "@/components/Header/Header";
+import { useAuth } from "@/Context/AuthContext";
 
-const Profile = () => {
-  const [totalEarned, setTotalEarned] = useState(25.5);
-  const [availableBalance, setAvailableBalance] = useState(25.5);
-  const [withdrawAmount, setWithdrawAmount] = useState("25");
+export default function Profile() {
+  const [totalEarned, setTotalEarned] = useState(500.0);
+  const [availableBalance, setAvailableBalance] = useState(500.0);
+  const [withdrawAmount, setWithdrawAmount] = useState("500");
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const { user, isLoading } = useAuth();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="min-h-screen flex- items-center justify-center">
+          Loading.....
+        </div>
+      </div>
+    );
+  }
 
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
@@ -26,6 +39,12 @@ const Profile = () => {
     setIsWithdrawModalOpen(true);
   };
 
+  useEffect(() => {
+    if (!isLoading && !user) {
+      Router.push("/login");
+    }
+  }, [isLoading, user, router]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-0">
       <Header />
@@ -33,7 +52,7 @@ const Profile = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Social Media Verification
+            Your Profile
           </h1>
           <p className="text-gray-600">
             Complete tasks by visiting links and uploading proof to earn
@@ -53,16 +72,38 @@ const Profile = () => {
 
           {/* Profile Content */}
           <div className="p-6">
-            {/* User Info */}
-            <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <User size={24} className="text-blue-600" />
+            <div className="flex items-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-2xl font-bold text-blue-600">
+                  {user.firstName.charAt(0)}
+                  {user.lastName.charAt(0)}
+                </span>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  John Doe
-                </h2>
-                <p className="text-gray-600">john.doe@example.com</p>
+                <h3 className="text-lg font-semibold">
+                  {user.firstName} {user.lastName}
+                </h3>
+                <p className="text-gray-600">{user.email}</p>
+                <p className="text-gray-600">user.phoneNumber</p>
+              </div>
+            </div>
+
+            {/* User Bank Info */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">
+                Bank Information
+              </h3>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <p className="text-gray-700">
+                  <span className="font-medium">Bank:</span> {user.bankName}
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">Branch:</span> {user.bankBranch}
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">Account No:</span>{" "}
+                  {user.bankAccountNo}
+                </p>
               </div>
             </div>
 
@@ -77,7 +118,7 @@ const Profile = () => {
                     Total Earned
                   </p>
                   <p className="text-2xl font-bold text-blue-600">
-                    ${totalEarned.toFixed(2)}
+                    Rs{totalEarned.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg">
@@ -115,6 +156,12 @@ const Profile = () => {
               <div className="bg-blue-600 text-white p-4 rounded-t-lg">
                 <h3 className="font-semibold">Withdraw Funds</h3>
               </div>
+              <button
+                onClick={logout}
+                className="w-full mt-4 py-2 px-4 bg-red-600 text-white rounded-md font-medium hover:bg-red-700"
+              >
+                Logout
+              </button>
 
               {/* Modal Content */}
               <div className="p-6">
@@ -124,7 +171,7 @@ const Profile = () => {
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      $
+                      Rs
                     </span>
                     <input
                       type="number"
@@ -174,6 +221,4 @@ const Profile = () => {
       </div>
     </div>
   );
-};
-
-export default Profile;
+}

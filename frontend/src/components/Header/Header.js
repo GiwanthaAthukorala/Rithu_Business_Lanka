@@ -1,55 +1,90 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/Context/AuthContext";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function Header() {
+  const { user, logout } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <div className=" bg-gray-50">
-      {/* Header Navigation */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo/Brand */}
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-semibold text-blue-600">
-                Rithu Business Lanka
-              </h1>
+              <Link href="/">
+                <h1 className="text-2xl font-bold text-blue-600">
+                  Rithu Business Lanka
+                </h1>
+              </Link>
             </div>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex space-x-8">
-              <a
+              <Link
                 href="#"
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+                className=" text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200  "
               >
                 How It Works
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+                className="text-gray-700 hover:text-blue-600  px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 Platforms
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 FAQ
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 Contact
-              </a>
+              </Link>
             </nav>
 
             {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
-              <button className="text-blue-600 hover:text-blue-700 px-4 py-2 text-sm font-medium transition-colors duration-200">
-                Log In
-              </button>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                Sign Up
-              </button>
+              {!mounted ? (
+                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+              ) : user ? (
+                <>
+                  <span className="text-sm">Welcome, {user.firstName}</span>
+                  <Link
+                    href="/profile"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="text-red-600 hover:underline"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-blue-600 hover:underline">
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Signup
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}

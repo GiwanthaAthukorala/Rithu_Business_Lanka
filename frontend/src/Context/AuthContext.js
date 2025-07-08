@@ -9,34 +9,54 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
+  const loadUser = async () => {
+    try {
+      // Only attempt to load user if we have a token
+      if (typeof window !== "undefined" && localStorage.getItem("token")) {
         const userData = await getProfile();
         setUser(userData);
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Failed to load user:", error);
+      // Clear invalid token
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+      }
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadUser();
   }, []);
 
-  const login = (userData) => {
-    localStorage.setItem("token", userData.token);
-    setUser(userData);
+  const login = async (userData) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", userData.token);
+    }
+    await loadUser(); // Wait for user data to be loaded
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
     setUser(null);
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        logout,
+        refreshUser: loadUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

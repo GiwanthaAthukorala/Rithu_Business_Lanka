@@ -10,6 +10,7 @@ import {
 import LSNavBar from "@/components/NavBar/NavBarLS";
 import { useRouter } from "next/router";
 import { register } from "@/lib/api";
+import { useAuth } from "@/Context/AuthContext";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,15 +19,17 @@ export default function SignupPage() {
     firstName: "",
     lastName: "",
     email: "",
-    bankname: "",
-    bankbranch: "",
-    bankaccountno: "",
-    phonenumber: "",
+    bankName: "",
+    bankBranch: "",
+    bankAccountNo: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
     agreedToTerms: false,
   });
   const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,24 +43,47 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError({});
+    const newErrors = {};
+    if (!formData.firstName) newErrors.firstName = "First name is required";
+    if (!formData.lastName) newErrors.lastName = "Last name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.phoneNumber)
+      newErrors.phoneNumber = "Phone number is required";
+    if (!formData.bankName) newErrors.bankName = "Bank name is required";
+    if (!formData.bankBranch) newErrors.bankBranch = "Bank branch is required";
+    if (!formData.bankAccountNo)
+      newErrors.bankAccountNo = "Account number is required";
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match");
+      setError("Passwords do not match");
       return;
     }
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 8)
+      newErrors.password = "Password must be at least 8 characters";
 
     if (!formData.agreedToTerms) {
       alert("You must agree to the terms and conditions");
       return;
     }
 
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setError("");
     try {
-      const response = await register(formData);
-      localStorage.setItem("token", response.token);
+      const userData = await register(formData);
+      login(userData);
       router.push("/profile");
     } catch (error) {
-      alert(`Signup failed: ${error.message || error}`);
+      console.error("Signup error:", error);
+      alert(error.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -81,9 +107,17 @@ export default function SignupPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Create your account
             </h2>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
             <p className="text-gray-600 mb-8">
               Already have an account?{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-700">
+              <a
+                href="/LoginPage/page"
+                className="text-blue-600 hover:text-blue-700"
+              >
                 Log in here
               </a>
             </p>
@@ -142,8 +176,8 @@ export default function SignupPage() {
                   </label>
                   <input
                     type="tel"
-                    name="phonenumber"
-                    value={formData.phonenumber}
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleInputChange}
                     className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="+94 71 234 5678"
@@ -164,8 +198,8 @@ export default function SignupPage() {
                     </label>
                     <input
                       type="text"
-                      name="bankname"
-                      value={formData.bankname}
+                      name="bankName"
+                      value={formData.bankName}
                       onChange={handleInputChange}
                       className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., Commercial Bank of Ceylon"
@@ -180,8 +214,8 @@ export default function SignupPage() {
                     </label>
                     <input
                       type="text"
-                      name="bankbranch"
-                      value={formData.bankbranch}
+                      name="bankBranch"
+                      value={formData.bankBranch}
                       onChange={handleInputChange}
                       className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., Colombo Main Branch"
@@ -196,8 +230,8 @@ export default function SignupPage() {
                     </label>
                     <input
                       type="text"
-                      name="bankaccountno"
-                      value={formData.bankaccountno}
+                      name="bankAccountNo"
+                      value={formData.bankAccountNo}
                       onChange={handleInputChange}
                       className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter your account number"

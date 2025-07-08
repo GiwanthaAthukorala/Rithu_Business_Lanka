@@ -3,6 +3,8 @@ import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import LSNavBar from "@/components/NavBar/NavBarLS";
 import { useRouter } from "next/router";
 import { login } from "@/lib/api";
+import { useAuth } from "@/Context/AuthContext";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,17 +13,21 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const router = useRouter();
+  const [error, setError] = useState("");
+  const { login: authLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const response = await login(email, password);
-      localStorage.setItem("token", response.token);
+      authLogin(userData);
       router.push("/profile");
     } catch (error) {
-      alert(`Login failed: ${error.messsage || error}`);
+      console.log("Login Error", error);
+      setError(error.message || "Login failed.Please try again. ");
     } finally {
       setLoading(false);
     }
@@ -53,85 +59,95 @@ export default function LoginPage() {
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 Log in to your account
               </h2>
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md ">
+                  {error}
+                </div>
+              )}
               <p className="text-gray-600">
                 Or{" "}
-                <button className="text-blue-600 hover:text-blue-700 transition-colors">
-                  create a new account
-                </button>
+                <Link href={"/SignupPage/page"}>
+                  <button className="text-blue-600 hover:text-blue-700 transition-colors">
+                    create a new account
+                  </button>
+                </Link>
               </p>
             </div>
 
             {/* Login Form */}
-            <div className="space-y-6">
-              {/* Email Field */}
-              <div>
-                <div className="block text-sm font-medium text-gray-700 mb-2">
-                  Email address
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <div className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </div>
-                <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-6">
+                {/* Email Field */}
+                <div>
+                  <div className="block text-sm font-medium text-gray-700 mb-2">
+                    Email address
+                  </div>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your password"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your email"
                   />
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <div className="ml-2 block text-sm text-gray-700">
-                    Remember me
+                {/* Password Field */}
+                <div>
+                  <div className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
-                <button className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
-                  Forgot your password?
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <div className="ml-2 block text-sm text-gray-700">
+                      Remember me
+                    </div>
+                  </div>
+                  <button className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
+                    Forgot your password?
+                  </button>
+                </div>
+
+                {/* Login Button */}
+                <button
+                  onClick={handleSubmit}
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isLoading ? "Logging in..." : "Log in"}
                 </button>
               </div>
-
-              {/* Login Button */}
-              <button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors ${
-                  isLoading ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-              >
-                {isLoading ? "Logging in..." : "Log in"}
-              </button>
-            </div>
+            </form>
 
             {/* Social Login */}
             <div className="mt-6">

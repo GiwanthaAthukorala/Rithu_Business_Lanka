@@ -1,65 +1,54 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
-import { getProfile } from "@/lib/api";
+import { login as apiLogin, getProfile } from "@/lib/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const loadUser = async () => {
-    try {
-      // Only attempt to load user if we have a token
-      if (typeof window !== "undefined" && localStorage.getItem("token")) {
-        const userData = await getProfile();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error("Failed to load user:", error);
-      // Clear invalid token
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-      }
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadUser();
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          const userData = await getProfile(storedToken);
+          setUser(userData);
+          setToken(storedToken);
+        } catch (error) {
+          console.error("Failed to authenticate with stored token:", error);
+          localStorage.removeItem("token");
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (userData) => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("token", userData.token);
-    }
-    await loadUser(); // Wait for user data to be loaded
+    setUser(userData.user);
+    setToken(userData.token);
+    localStorage.setItem("token", userData.token);
   };
 
   const logout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
-    }
     setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        logout,
-        refreshUser: loadUser,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

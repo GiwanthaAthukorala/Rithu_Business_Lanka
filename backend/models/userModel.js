@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
         "Please fill a valid email address",
       ],
     },
+    username: { type: String, unique: true, sparse: true },
     phoneNumber: { type: String, required: true },
     bankName: { type: String, required: true },
     bankBranch: { type: String, required: true },
@@ -35,6 +36,11 @@ userSchema.pre("save", async function (next) {
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  if (!this.username) {
+    this.username = this.email.split("@")[0];
+  }
+
   next();
 });
 

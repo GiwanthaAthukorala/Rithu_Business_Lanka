@@ -11,6 +11,7 @@ import LSNavBar from "@/components/NavBar/NavBarLS";
 import { useRouter } from "next/router";
 import { register } from "@/lib/api";
 import { useAuth } from "@/Context/AuthContext";
+import Link from "next/link";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +45,8 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError({});
+    setError("");
+
     const newErrors = {};
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.lastName) newErrors.lastName = "Last name is required";
@@ -58,6 +60,7 @@ export default function SignupPage() {
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
       return;
     }
     if (!formData.password) newErrors.password = "Password is required";
@@ -65,7 +68,8 @@ export default function SignupPage() {
       newErrors.password = "Password must be at least 8 characters";
 
     if (!formData.agreedToTerms) {
-      alert("You must agree to the terms and conditions");
+      setError("You must agree to the terms and conditions");
+      setLoading(false);
       return;
     }
 
@@ -75,15 +79,13 @@ export default function SignupPage() {
       return;
     }
 
-    setLoading(true);
-    setError("");
     try {
       const userData = await register(formData);
       login(userData);
       router.push("/profile");
     } catch (error) {
       console.error("Signup error:", error);
-      alert(error.message || "Signup failed. Please try again.");
+      setError(error.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }

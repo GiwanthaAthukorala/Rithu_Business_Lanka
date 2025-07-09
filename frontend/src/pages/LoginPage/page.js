@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import LSNavBar from "@/components/NavBar/NavBarLS";
 import { useRouter } from "next/router";
-import { login } from "@/lib/api";
+import { login as apiLogin } from "@/lib/api";
 import { useAuth } from "@/Context/AuthContext";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [isLoading, setLoading] = useState(false);
   const router = useRouter();
   const [error, setError] = useState("");
-  const { login: authLogin } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,12 +22,15 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await login(email, password);
-      authLogin(userData);
+      const userData = await apiLogin(email, password);
+      login(userData);
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+      }
       router.push("/profile");
     } catch (error) {
-      console.log("Login Error", error);
-      setError(error.message || "Login failed.Please try again. ");
+      console.error("Login Error", error);
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }

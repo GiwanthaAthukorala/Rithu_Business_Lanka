@@ -1,91 +1,64 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Request interceptor
-API.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor to handle 401 errors
-API.interceptors.response.use(
+// Add response interceptor to handle errors
+api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear token if we get 401 response
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-      }
-      console.error("Unauthorized request - token cleared");
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const message = error.response.data?.message || "Request failed";
+      return Promise.reject(new Error(message));
+    } else if (error.request) {
+      // The request was made but no response was received
+      return Promise.reject(new Error("No response from server"));
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
   }
 );
 
 export const register = async (userData) => {
   try {
-    const response = await API.post("/users/signup", {
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      phoneNumber: userData.phoneNumber,
-      bankName: userData.bankName,
-      bankBranch: userData.bankBranch,
-      bankAccountNo: userData.bankAccountNo,
-      password: userData.password,
-    });
+    const response = await api.post("/users/signup", userData);
     return response.data;
   } catch (error) {
     console.error("Registration error:", error);
-    throw (
-      error.response?.data?.message || error.message || "Registration failed"
-    );
+    throw error;
   }
 };
 
 export const login = async (email, password) => {
   try {
-    const response = await API.post("/users/login", { email, password });
+    const response = await api.post("/users/login", { email, password });
     return response.data;
   } catch (error) {
     console.error("Login error:", error);
-    throw error.response?.data?.message || error.message || "Login failed";
+    throw error;
   }
 };
 
-export const getProfile = async () => {
+export const getProfile = async (token) => {
   try {
-    // Only attempt on client side
-    if (typeof window === "undefined") {
-      throw new Error("Cannot fetch profile on server side");
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No authentication token found");
-    }
-
-    const response = await API.get("/users/profile");
+    const response = await api.get("/users/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error("Profile fetch error:", error);
-    throw (
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to fetch profile"
-    );
+    console.error("Profile error:", error);
+    throw error;
   }
 };

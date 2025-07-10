@@ -31,6 +31,7 @@ export default function SignupPage() {
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
+  const { register } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,6 +47,15 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    try {
+      await register(formData);
+    } catch (error) {
+      console.error("Signup Error :", error);
+      setError(error.message || "Signup failed.Please try again");
+    } finally {
+      setLoading(false);
+    }
 
     const newErrors = {};
     if (!formData.firstName) newErrors.firstName = "First name is required";

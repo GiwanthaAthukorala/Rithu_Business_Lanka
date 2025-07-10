@@ -1,6 +1,10 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
-import { login as apiLogin, getProfile } from "@/lib/api";
+import {
+  login as apiLogin,
+  getProfile,
+  register as apiRegister,
+} from "@/lib/api";
 
 const AuthContext = createContext();
 
@@ -33,6 +37,16 @@ export const AuthProvider = ({ children }) => {
     setUser(userData.user);
     setToken(userData.token);
     localStorage.setItem("token", userData.token);
+    router.push("/profile");
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await apiRegister(userData);
+      login(response); // Automatically log in after registration
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = () => {
@@ -43,7 +57,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, register, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

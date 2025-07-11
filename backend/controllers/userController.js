@@ -98,6 +98,8 @@ const loginUser = async (req, res) => {
       lastName: user.lastName,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      bankName: user.bankName,
+      bankBranch: user.bankBranch,
       bankAccountNo: user.bankAccountNo,
       token: generateToken(user._id),
     });

@@ -16,7 +16,11 @@ const userSchema = new mongoose.Schema(
       ],
     },
     username: { type: String, unique: true, sparse: true },
-    phoneNumber: { type: String, required: true },
+    phoneNumber: {
+      type: String,
+      required: true,
+      match: [/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"],
+    },
     bankName: { type: String, required: true },
     bankBranch: { type: String, required: true },
     bankAccountNo: { type: String, required: true },

@@ -43,7 +43,21 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await apiRegister(userData);
-      login(response); // Automatically log in after registration
+      if (response.token) {
+        setUser({
+          id: response._id,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          email: response.email,
+          phoneNumber: response.phoneNumber,
+          bankName: response.bankName,
+          bankBranch: response.bankBranch,
+          bankAccountNo: response.bankAccountNo,
+        });
+        setToken(response.token);
+        localStorage.setItem("token", response.token);
+      }
+      return response;
     } catch (error) {
       throw error;
     }

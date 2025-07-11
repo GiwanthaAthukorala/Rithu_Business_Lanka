@@ -314,7 +314,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* SocialPay Section */}
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 m-2">
                   <div className="flex items-center mb-3">
                     <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mr-2">
                       <svg
@@ -350,7 +350,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* Terms Checkbox */}
-                <div className="flex items-start">
+                <div className="flex items-start m-4">
                   <input
                     type="checkbox"
                     name="agreedToTerms"
@@ -359,7 +359,7 @@ export default function SignupPage() {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
                     required
                   />
-                  <label className="ml-2 text-sm text-gray-600">
+                  <label className="ml-2  text-sm text-gray-600">
                     I agree to the{" "}
                     <a href="#" className="text-blue-600 hover:text-blue-700">
                       Terms of Service

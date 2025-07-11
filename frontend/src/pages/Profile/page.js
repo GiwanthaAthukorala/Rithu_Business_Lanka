@@ -2,23 +2,26 @@ import React, { useEffect, useState } from "react";
 import { User, DollarSign } from "lucide-react";
 import Header from "@/components/Header/Header";
 import { useAuth } from "@/Context/AuthContext";
+import { useRouter } from "next/router";
 
 export default function Profile() {
   const [totalEarned, setTotalEarned] = useState(500.0);
   const [availableBalance, setAvailableBalance] = useState(500.0);
   const [withdrawAmount, setWithdrawAmount] = useState("500");
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
 
-  if (!user) {
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="min-h-screen flex- items-center justify-center">
-          Loading.....
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
         </div>
       </div>
     );
+    s;
   }
 
   const handleWithdraw = () => {
@@ -41,7 +44,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      Router.push("/login");
+      router.push("/login");
     }
   }, [isLoading, user, router]);
 

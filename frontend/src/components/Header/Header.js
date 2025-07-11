@@ -75,13 +75,13 @@ export default function Header() {
               ) : (
                 <>
                   <Link
-                    href="/LoginPage/page"
+                    href="/Log-in/page"
                     className="text-blue-600 hover:underline"
                   >
                     Login
                   </Link>
                   <Link
-                    href="/SignupPage/page"
+                    href="/Sign-up/page"
                     className="text-blue-600 hover:underline"
                   >
                     Signup
